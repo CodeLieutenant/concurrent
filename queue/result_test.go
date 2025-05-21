@@ -36,16 +36,18 @@ func TestPushResultString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		result PushResult
 		want   string
+		result PushResult
 	}{
-		{PushFailed, "PushFailed"},
-		{PushSuccess, "PushSuccess"},
-		{PushFull, "PushFull"},
+		{result: PushFailed, want: "PushFailed"},
+		{result: PushSuccess, want: "PushSuccess"},
+		{result: PushFull, want: "PushFull"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
+
 			got := tt.result.String()
 			if got != tt.want {
 				t.Errorf("PushResult(%d).String() = %q, want %q", tt.result, got, tt.want)
@@ -58,16 +60,18 @@ func TestPopResultString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		result PopResult
 		want   string
+		result PopResult
 	}{
-		{PopFailed, "PopFailed"},
-		{PopSuccess, "PopSuccess"},
-		{PopEmpty, "PopEmpty"},
+		{result: PopFailed, want: "PopFailed"},
+		{result: PopSuccess, want: "PopSuccess"},
+		{result: PopEmpty, want: "PopEmpty"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.want, func(t *testing.T) {
+			t.Parallel()
+
 			got := tt.result.String()
 			if got != tt.want {
 				t.Errorf("PopResult(%d).String() = %q, want %q", tt.result, got, tt.want)
@@ -90,6 +94,8 @@ func TestPushResultIsSuccess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.result.String(), func(t *testing.T) {
+			t.Parallel()
+
 			got := tt.result.IsSuccess()
 			if got != tt.want {
 				t.Errorf("PushResult(%d).IsSuccess() = %v, want %v", tt.result, got, tt.want)
@@ -112,6 +118,8 @@ func TestPopResultIsSuccess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.result.String(), func(t *testing.T) {
+			t.Parallel()
+
 			got := tt.result.IsSuccess()
 			if got != tt.want {
 				t.Errorf("PopResult(%d).IsSuccess() = %v, want %v", tt.result, got, tt.want)

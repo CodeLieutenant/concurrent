@@ -199,6 +199,7 @@ func TestEnqueueDequeueRace(t *testing.T) {
 		t.Fatalf("produced %d, consumed %d", produced.Load(), consumed.Load())
 	}
 }
+
 func TestFixedQueue_Len(t *testing.T) {
 	t.Parallel()
 
@@ -337,6 +338,8 @@ func TestFixedQueue_Cap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if tt.queueSize < 0 {
 				defer func() {
 					if r := recover(); r == nil {
@@ -416,10 +419,10 @@ func TestFixedQueue_CapAndLenRelationship(t *testing.T) {
 			t.Parallel()
 			q := NewFixedQueue[int](size)
 
-			cap := q.Cap()
+			capacity := q.Cap()
 			expectedCap := nextPowerOfTwo(size)
-			if cap != expectedCap {
-				t.Errorf("Cap() = %d, want %d", cap, expectedCap)
+			if capacity != expectedCap {
+				t.Errorf("Cap() = %d, want %d", capacity, expectedCap)
 			}
 
 			// Initially empty
@@ -428,7 +431,7 @@ func TestFixedQueue_CapAndLenRelationship(t *testing.T) {
 			}
 
 			// Fill to capacity
-			for i := uint64(0); i < cap; i++ {
+			for i := uint64(0); i < capacity; i++ {
 				if !q.Push(int(i)) {
 					t.Fatalf("failed to push item %d", i)
 				}
@@ -439,8 +442,8 @@ func TestFixedQueue_CapAndLenRelationship(t *testing.T) {
 			}
 
 			// Should be full now
-			if got := q.Len(); got != cap {
-				t.Errorf("When full: Len() = %d, want Cap() = %d", got, cap)
+			if got := q.Len(); got != capacity {
+				t.Errorf("When full: Len() = %d, want Cap() = %d", got, capacity)
 			}
 
 			// Cannot push more
