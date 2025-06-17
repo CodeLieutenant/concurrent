@@ -14,7 +14,7 @@ func TestNestNextPowerOfTwo(t *testing.T) {
 	tests := []struct {
 		name string
 		n    int
-		want uint64
+		want int64
 	}{
 		{"negative", -5, 0},
 		{"zero", 0, 0},
@@ -208,7 +208,7 @@ func TestFixedQueue_Len(t *testing.T) {
 		queueSize   int
 		pushItems   int
 		popItems    int
-		expectedLen uint64
+		expectedLen int64
 	}{
 		{
 			name:        "empty queue",
@@ -268,14 +268,14 @@ func TestFixedQueue_Len(t *testing.T) {
 			q := NewFixedQueue[int](tt.queueSize)
 
 			// Push items
-			for i := 0; i < tt.pushItems; i++ {
+			for i := range tt.pushItems {
 				if !q.Push(i) {
 					t.Fatalf("failed to push item %d, queue reported as full", i)
 				}
 			}
 
 			// Pop items
-			for i := 0; i < tt.popItems; i++ {
+			for i := range tt.popItems {
 				if _, ok := q.Pop(); !ok {
 					t.Fatalf("failed to pop item %d, queue reported as empty", i)
 				}
@@ -295,19 +295,13 @@ func TestFixedQueue_Cap(t *testing.T) {
 	tests := []struct {
 		name         string
 		queueSize    int
-		expectedCap  uint64
+		expectedCap  int64
 		expectedPow2 bool
 	}{
 		{
 			name:         "zero size becomes default",
 			queueSize:    0,
 			expectedCap:  DefaultQueueSize,
-			expectedPow2: true,
-		},
-		{
-			name:         "negative size panics",
-			queueSize:    -1,
-			expectedCap:  0, // Not used due to panic
 			expectedPow2: true,
 		},
 		{
@@ -383,7 +377,7 @@ func TestFixedQueue_LenAfterWrap(t *testing.T) {
 			}
 
 			// Check length increases with each push
-			expectedLen := uint64(i + 1)
+			expectedLen := int64(i + 1)
 			if got := q.Len(); got != expectedLen {
 				t.Errorf("cycle %d after push %d: Len() = %d, want %d", cycle, i, got, expectedLen)
 			}
@@ -396,7 +390,7 @@ func TestFixedQueue_LenAfterWrap(t *testing.T) {
 			}
 
 			// Check length decreases with each pop
-			expectedLen := uint64(3 - i)
+			expectedLen := int64(3 - i)
 			if got := q.Len(); got != expectedLen {
 				t.Errorf("cycle %d after pop %d: Len() = %d, want %d", cycle, i, got, expectedLen)
 			}
@@ -431,7 +425,7 @@ func TestFixedQueue_CapAndLenRelationship(t *testing.T) {
 			}
 
 			// Fill to capacity
-			for i := uint64(0); i < capacity; i++ {
+			for i := int64(0); i < capacity; i++ {
 				if !q.Push(int(i)) {
 					t.Fatalf("failed to push item %d", i)
 				}

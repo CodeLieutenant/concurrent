@@ -12,7 +12,7 @@ type (
 	QueueLike[T any] interface {
 		Push(T) bool
 		Pop() (T, bool)
-		Len() uint64
+		Len() int64
 	}
 	ChannelQueue[T any] struct {
 		ch chan T
@@ -59,7 +59,7 @@ func (q *ChannelQueue[T]) Pop() (out T, ok bool) {
 	}
 }
 
-func (q *ChannelQueue[T]) Len() uint64 { return uint64(len(q.ch)) }
+func (q *ChannelQueue[T]) Len() int64 { return int64(len(q.ch)) }
 
 func NewRWQueue[T any](capacity int) *RWQueue[T] {
 	return &RWQueue[T]{
@@ -94,10 +94,10 @@ func (q *RWQueue[T]) Pop() (zero T, ok bool) {
 	return val, true
 }
 
-func (q *RWQueue[T]) Len() uint64 {
+func (q *RWQueue[T]) Len() int64 {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
-	return uint64(q.size)
+	return int64(q.size)
 }
 
 func NewMutexQueue[T any](capacity int) *MutexQueue[T] {
@@ -133,10 +133,10 @@ func (q *MutexQueue[T]) Pop() (zero T, ok bool) {
 	return val, true
 }
 
-func (q *MutexQueue[T]) Len() uint64 {
+func (q *MutexQueue[T]) Len() int64 {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	return uint64(q.size)
+	return int64(q.size)
 }
 
 const payload = 12345

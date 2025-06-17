@@ -14,14 +14,14 @@ const DefaultQueueSize = 256
 type (
 	slot[T any] struct {
 		value T
-		seq   atomic.Uint64
+		seq   int64
 	}
 
 	FixedQueue[T any] struct {
 		buf  []slot[T]
-		tail atomic.Uint64
-		head atomic.Uint64
-		mask uint64
+		tail atomic.Int64
+		head atomic.Int64
+		mask int64
 	}
 )
 
@@ -48,7 +48,7 @@ func NewFixedQueue[T any](n int) *FixedQueue[T] {
 	}
 
 	for i := range capPow {
-		q.buf[i].seq.Store(i)
+		q.buf[i].seq = i
 	}
 
 	return q
@@ -57,14 +57,14 @@ func NewFixedQueue[T any](n int) *FixedQueue[T] {
 //go:nosplit
 //go:registerparams
 //go:norace
-func (q *FixedQueue[T]) Len() uint64 {
+func (q *FixedQueue[T]) Len() int64 {
 	return q.tail.Load() - q.head.Load()
 }
 
 //go:nosplit
 //go:registerparams
 //go:norace
-func (q *FixedQueue[T]) Cap() uint64 {
+func (q *FixedQueue[T]) Cap() int64 {
 	return q.mask + 1
 }
 
@@ -75,13 +75,13 @@ func (q *FixedQueue[T]) PushAtomic(v T) PushResult {
 	pos := q.tail.Load()
 	cell := &q.buf[pos&q.mask]
 
-	if int64(cell.seq.Load())-int64(pos) < 0 {
+	if cell.seq-pos < 0 {
 		return PushFull
 	}
 
 	if q.tail.CompareAndSwap(pos, pos+1) {
 		cell.value = v
-		cell.seq.Store(pos + 1)
+		cell.seq = pos + 1
 
 		return PushSuccess
 	}
@@ -123,8 +123,7 @@ func (q *FixedQueue[T]) PopAtomic() (T, PopResult) {
 	var zero T
 	pos := q.head.Load()
 	cell := &q.buf[pos&q.mask]
-	seq := cell.seq.Load()
-	diff := int64(seq) - int64(pos+1)
+	diff := cell.seq - pos + 1
 
 	if diff < 0 {
 		return zero, PopEmpty
@@ -134,7 +133,7 @@ func (q *FixedQueue[T]) PopAtomic() (T, PopResult) {
 		val := cell.value // Help GC by clearing the slot.
 
 		cell.value = zero
-		cell.seq.Store(pos + q.mask + 1)
+		cell.seq = pos + q.mask + 1
 
 		return val, PopSuccess
 	}
@@ -168,12 +167,12 @@ func (q *FixedQueue[T]) Pop() (T, bool) {
 //go:nosplit
 //go:registerparams
 //go:norace
-func nextPowerOfTwo(n int) uint64 {
+func nextPowerOfTwo(n int) int64 {
 	n--
 	n |= n >> 1
 	n |= n >> 2
 	n |= n >> 4
 	n |= n >> 8
 	n |= n >> 16
-	return uint64(n + 1)
+	return int64(n + 1)
 }
